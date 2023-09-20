@@ -1,0 +1,4 @@
+.venv/
+.vscode-upload.json
+__pycache__/
+.history/
