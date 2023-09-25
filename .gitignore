@@ -1,4 +1,10 @@
+.env
 .venv/
 .vscode-upload.json
 __pycache__/
 .history/
+
+
+# Mac OSX Finder files
+.DS_Store
+
