@@ -166,11 +166,22 @@ class RecordItem(Resource):
         return ok_res(msg="Record deleted", data=None)
 
 
+class DeviceRecords(Resource):
+    """Get records for a specific device"""
+
+    def get(self, device_id):
+        """Get all records for a specific device"""
+        records = db.session.query(Record).filter(Record.device_id == device_id).all()
+        data = [record.as_dict() for record in records]
+        return ok_res(data=data)
+
+
 # adding the defined resources along with their corresponding urls
 api.add_resource(DeviceList, "/devices")
 api.add_resource(DeviceItem, "/devices/<int:device_id>")
 api.add_resource(RecordList, "/records")
 api.add_resource(RecordItem, "/records/<int:record_id>")
+api.add_resource(DeviceRecords, "/devices/<int:device_id>/records")
 
 
 if __name__ == "__main__":

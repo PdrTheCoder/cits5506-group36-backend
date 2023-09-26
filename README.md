@@ -17,6 +17,8 @@
   * `POST /records` - Create a new record
   * `PATCH /records/<id>` - Update a record
   * `DELETE /records/<id>` - Delete a record
+* Additionally view a list records by device
+  * `GET /devices/<id>/records` - Get all records for a device
 
 #### Components
 
