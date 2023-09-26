@@ -1,0 +1,12 @@
+[Unit]
+Description=Gunicorn instance to serve iot project
+After=network.target
+
+[Service]
+User=ubuntta
+WorkingDirectory=/home/sammy/myproject
+Environment="PATH=/home/sammy/myproject/myprojectenv/bin"
+ExecStart=/home/sammy/myproject/myprojectenv/bin/gunicorn --workers 3 --bind unix:myproject.sock -m 007 wsgi:app
+
+[Install]
+WantedBy=multi-user.target
