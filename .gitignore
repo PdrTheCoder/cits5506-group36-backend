@@ -3,6 +3,7 @@
 .vscode-upload.json
 __pycache__/
 .history/
+instance/
 
 
 # Mac OSX Finder files
