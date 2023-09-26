@@ -1,0 +1,11 @@
+[Unit]
+Description= MQTT subscriber for cits5506 IoT project
+After=network.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu/cits5506-group36-backend/mqtt_client
+ExecStart=/home/ubuntu/cits5506-group36-backend/.venv/bin/python sub.py
+
+[Install]
+WantedBy=multi-user.target
