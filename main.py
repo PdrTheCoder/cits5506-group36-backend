@@ -3,6 +3,7 @@ import datetime
 
 from flask import Flask, request
 from flask_restful import Api, Resource
+from flask_cors import CORS
 from pydantic import ValidationError
 
 from model import Device, Record, db
@@ -12,9 +13,13 @@ from validation import DeviceCreate, DeviceUpdate, RecordCreate, RecordUpdate
 # creating the flask app
 app = Flask(__name__)
 
+# cors for all apis
+CORS(app)
+
 # configure database
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///project.db"
 db.init_app(app)
+
 
 # creating an API object
 api = Api(app)
@@ -185,4 +190,4 @@ api.add_resource(DeviceRecords, "/devices/<int:device_id>/records")
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=5009)
