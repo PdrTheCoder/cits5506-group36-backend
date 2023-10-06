@@ -176,7 +176,16 @@ class DeviceRecords(Resource):
 
     def get(self, device_id):
         """Get all records for a specific device"""
-        records = db.session.query(Record).filter(Record.device_id == device_id).all()
+        """HARD CODE ORDER AND LIMIT - TODO fix it later"""
+        records = db.session.query(
+            Record
+        ).filter(
+            Record.device_id == device_id
+        ).order_by(
+            -Record.created_at
+        ).limit(
+            100
+        ).all()
         data = [record.as_dict() for record in records]
         return ok_res(data=data)
 

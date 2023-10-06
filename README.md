@@ -28,3 +28,17 @@ API Backend utilising Flask and Python
 * Flask-Pydantic for data validation
 * Flask-SQLAlchemy for models and database
 * Flask-Cors for core issue
+
+
+### Database  
+
+Sqlite3 is used in this project.
+
+Initiate database  
+`Python initdb.py`
+
+Also, need to manually create a trigger after initiation.  
+`CREATE TRIGGER AUTOUPDATER AFTER INSERT ON record`  
+`BEGIN`  
+`UPDATE device SET distance = NEW.distance WHERE id=NEW.device_id;`  
+`END;`
