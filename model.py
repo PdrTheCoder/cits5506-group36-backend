@@ -1,8 +1,6 @@
+from email.utils import parsedate_to_datetime
 import datetime
-
-from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import event
 from sqlalchemy.orm import DeclarativeBase, mapped_column
 
 
@@ -36,8 +34,8 @@ class Device(db.Model):
             "empty_distance": self.empty_distance,
             "threshold": self.threshold,
             "desc": self.desc,
-            "created_at": self.created_at,
-            "updated_at": self.updated_at,
+            "created_at": self.created_at.isoformat(sep=' ', timespec='seconds'),
+            "updated_at": self.updated_at and self.updated_at.isoformat(sep=' ', timespec='seconds')
         }
 
 
@@ -59,5 +57,5 @@ class Record(db.Model):
             "id": self.id,
             "device_id": self.device_id,
             "distance": self.distance,
-            "created_at": self.created_at,
+            "created_at": self.created_at.isoformat(sep=' ', timespec='seconds'),
         }

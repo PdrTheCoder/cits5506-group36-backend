@@ -1,23 +1,33 @@
 from datetime import datetime
 import paho.mqtt.client as mqtt
+import requests
 import sqlite3
 
 conn = sqlite3.connect('../instance/project.db')
+URL = 'http://127.0.0.1/devices/'
+
+alert_log = {
+    1: False,
+    2: False,
+    3: False
+}
 
 def callback_data_report(client, userdata, msg):
-
     try:
         device_id = int((tmp := msg.payload.decode().split('_'))[0])
         distance = round(float(tmp[1]), 1)
-        created_at = datetime.utcnow().isoformat(sep=' ')
+        # TODO also need to use device local time, here just ignore that
+        res = requests.post(
+            f'http://127.0.0.1/devices/{device_id}/records',
+            data={'distance': distance},
+            headers={"Content-Type": "application/json"})
 
-        cursor = conn.cursor()
-        cursor.execute(f"INSERT INTO record (device_id, distance, created_at) VALUES ({device_id}, {distance}, '{created_at}')")
-        cursor.execute(f"UPDATE device SET distance={distance} WHERE id={device_id}")
-        conn.commit()
     except Exception as e:
         # TODO 
         print(str(e))
+    
+    # HERE we compare the threshold and distance
+    # TODO
 
 
 # The callback for when the client receives a CONNACK response from the server.

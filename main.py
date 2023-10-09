@@ -7,6 +7,7 @@ from flask_cors import CORS
 from pydantic import ValidationError
 
 from model import Device, Record, db
+from sqlalchemy import desc
 from utils import error_res, ok_res, res
 from validation import DeviceCreate, DeviceUpdate, RecordCreate, RecordUpdate
 
@@ -216,12 +217,35 @@ class DeviceRecords(Resource):
         ).filter(
             Record.device_id == device_id
         ).order_by(
-            -Record.created_at
+            desc(Record.created_at)
         ).limit(
             100
         ).all()
         data = [record.as_dict() for record in records]
         return ok_res(data=data)
+
+    def post(self, device_id):
+        """Post a record to a specific device"""
+
+        code, res_data = -1, None
+        data = request.get_json()
+        try:
+            distance = float(data.get("distance"))
+        except ValidationError as e:
+            return error_res(f"Invalid input: {str(e)}")
+
+        try:
+            db.session.add(record := Record(device_id=device_id, distance=distance))
+            db.session.commit()
+            code, res_data = 0, {"id": record.id}
+            msg = f"Record created for device with id {device_id}"
+        except Exception as e:
+            db.session.rollback()
+            msg = f"Error: {str(e)}"
+        finally:
+            db.session.close()
+        return res(msg, code, res_data)
+
 
 
 # adding the defined resources along with their corresponding urls
