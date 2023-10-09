@@ -4,10 +4,10 @@ import smtplib
 # Import the email modules we'll need
 from email.message import EmailMessage
 
-MAIL_HOST = 'smtp.163.com'
-MAIL_PORT = 25
-MAIL_USER = 'paynemax@163.com'
-MAIL_PASS = 'JEFQZOCDXIJSNIES'
+MAIL_HOST = 'smtp-mail.outlook.com'
+MAIL_PORT = 587
+MAIL_USER = 'cits55062023@outlook.com'
+MAIL_PASS = 'group36Qaz'
 
 def sendmail(receiver, content, subject):
     msg = EmailMessage()
@@ -16,8 +16,8 @@ def sendmail(receiver, content, subject):
     msg['From'] = MAIL_USER
     msg['To'] = receiver
 
-    s = smtplib.SMTP()
-    s.connect(MAIL_HOST, MAIL_PORT)
+    s = smtplib.SMTP(MAIL_HOST, MAIL_PORT)
+    s.starttls()
     s.login(MAIL_USER, MAIL_PASS)
     s.send_message(msg)
     s.quit()

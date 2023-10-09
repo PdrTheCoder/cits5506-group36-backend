@@ -21,6 +21,7 @@ def callback_data_report(client, userdata, msg):
     try:
         device_id = int((tmp := msg.payload.decode().split('_'))[0])
         distance = round(float(tmp[1]), 1)
+        logger.debug(f'device_id: {device_id}, distance: {distance}.')
     except Exception as e:
         logger.error(f'Error: {str(e)}')
 
@@ -32,7 +33,7 @@ def callback_data_report(client, userdata, msg):
             json={'distance': distance},
             headers={"Content-Type": "application/json"})
         data = res.json()
-        logger.info(data['message'])
+        logger.debug(data['message'])
     except Exception as e:
         logger.error(f'Error: {str(e)}')
         return
@@ -45,7 +46,8 @@ def callback_data_report(client, userdata, msg):
         )
         data = res1.json()
         if data['code'] == 0:
-            threshold = data['data']['threshold']
+            threshold = float(data['data']['threshold'])
+            logger.debug(f'threshold - {threshold}')
         else:
             raise Exception(data['message'])
     except Exception as e:
@@ -55,10 +57,11 @@ def callback_data_report(client, userdata, msg):
     if distance >= threshold and not alert_log[1]:
         # send email
         alert_log[1] = True
-        sendmail('23870387@student.uwa.edu.au', 'test my email', 'dispenser is running out.')
+        sendmail('23870387@student.uwa.edu.au', 'test my email', 'dispenser - {device_id} is running out.')
     else:
         # reset flag state
         alert_log[1] = False
+    logger.debug('finished.')
 
 
 # The callback for when the client receives a CONNACK response from the server.
