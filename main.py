@@ -7,7 +7,7 @@ from flask_cors import CORS
 from pydantic import ValidationError
 
 from model import Device, Record, db
-from utils import error_res, ok_res
+from utils import error_res, ok_res, res
 from validation import DeviceCreate, DeviceUpdate, RecordCreate, RecordUpdate
 
 # creating the flask app
@@ -37,6 +37,9 @@ class DeviceList(Resource):
     def post(self):
         """create a device"""
         data = request.get_json()
+        code = -1
+        res_data = None
+
         try:
             device_create = DeviceCreate(**data)
         except ValidationError as e:
@@ -47,10 +50,15 @@ class DeviceList(Resource):
         try:
             db.session.add(device)
             db.session.commit()
+            res_data = {"id": device.id}
+            msg = "Device added."
+            code = 0
         except Exception as e:
+            db.session.rollback()
+            msg = f"Failed to register the device. Reason: {str(e)}"
+        finally:
             db.session.close()
-            return error_res(f"Failed to register the device. Reason: {str(e)}")
-        return ok_res(msg="Device added", data={"id": device.id})
+        return res(msg=msg, code=code, data=res_data)
 
 
 class DeviceItem(Resource):
@@ -67,9 +75,12 @@ class DeviceItem(Resource):
         """update a device by id"""
         data = request.get_json()
         device = db.session.get(Device, device_id)
+
+        code = -1
+        res_data = None
+
         if device is None:
             return error_res("Error: Device not found")
-
         try:
             device_update = DeviceUpdate(**data)
         except ValidationError as e:
@@ -83,10 +94,16 @@ class DeviceItem(Resource):
                     setattr(device, key, value)
             device.updated_at = datetime.datetime.utcnow()
             db.session.commit()
+            res_data = device.as_dict()
+            code = 0
+            msg = 'Device updated.'
             return ok_res(msg="Device updated", data=device.as_dict())
         except (KeyError, AttributeError) as e:
             db.session.rollback()
-            return error_res(f"Error: {str(e)}")
+            msg = f"Error: {str(e)}"
+        finally:
+            db.session.close()
+        return res(msg=msg, code=code, data=res_data)
 
     def delete(self, device_id):
         """delete a device by id"""
@@ -94,8 +111,19 @@ class DeviceItem(Resource):
         if device is None:
             return error_res("Error: Device not found")
         db.session.delete(device)
-        db.session.commit()
-        return ok_res(msg="Device deleted", data=None)
+
+        res_data = None
+        code = -1
+        try:
+            db.session.commit()
+            code = 0
+            msg = "Device deleted."
+        except Exception as e:
+            db.session.rollback()
+            msg = f"Error: {str(e)}"
+        finally:
+            db.session.close()
+        return res(msg=msg, code=code, data=res_data)
 
 
 class RecordList(Resource):
@@ -110,6 +138,9 @@ class RecordList(Resource):
     def post(self):
         """create a record"""
         data = request.get_json()
+        code = -1
+        res_data = None
+
         try:
             record_create = RecordCreate(**data)
         except ValidationError as e:
@@ -120,10 +151,15 @@ class RecordList(Resource):
         try:
             db.session.add(record)
             db.session.commit()
+            code = 0
+            msg = "Record added."
+            res_data = {"id": record.id}
         except Exception as e:
+            db.session.rollback()
+            msg = f"Failed to register the record. Reason: {str(e)}"
+        finally:
             db.session.close()
-            return error_res(f"Failed to register the record. Reason: {str(e)}")
-        return ok_res(msg="Record added", data={"id": record.id})
+        return res(msg=msg, code=code, data=res_data)
 
 
 class RecordItem(Resource):
@@ -140,6 +176,9 @@ class RecordItem(Resource):
         """update a record by id"""
         data = request.get_json()
         record = db.session.get(Record, record_id)
+        res_data = None
+        code = -1
+        
         if record is None:
             return error_res("Error: Record not found")
 
@@ -156,19 +195,14 @@ class RecordItem(Resource):
                     setattr(record, key, value)
             record.updated_at = datetime.datetime.utcnow()
             db.session.commit()
-            return ok_res(msg="Record updated", data=record.as_dict())
+            code = 0
+            res_data = record.as_dict()
+            msg = "Record updated"
         except (KeyError, AttributeError) as e:
             db.session.rollback()
-            return error_res(f"Error: {str(e)}")
-
-    def delete(self, record_id):
-        """delete a record by id"""
-        record = db.session.get(Record, record_id)
-        if record is None:
-            return error_res("Error: Record not found")
-        db.session.delete(record)
-        db.session.commit()
-        return ok_res(msg="Record deleted", data=None)
+        finally:
+            db.session.close()
+        return res(msg, code, data=res_data)
 
 
 class DeviceRecords(Resource):
@@ -199,4 +233,4 @@ api.add_resource(DeviceRecords, "/devices/<int:device_id>/records")
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5009)
+    app.run(debug=False, port=5009)
