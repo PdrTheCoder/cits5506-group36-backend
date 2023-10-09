@@ -1,10 +1,10 @@
-from datetime import datetime
 import paho.mqtt.client as mqtt
 import requests
-import sqlite3
+import logging
 
-conn = sqlite3.connect('../instance/project.db')
-URL = 'http://127.0.0.1/devices/'
+from send import sendmail
+
+BASE_URL = 'http://127.0.0.1:5009'
 
 alert_log = {
     1: False,
@@ -12,22 +12,53 @@ alert_log = {
     3: False
 }
 
+logger = logging.getLogger(__name__)
+
 def callback_data_report(client, userdata, msg):
+    global alert_log
+
+    # parse parameters
     try:
         device_id = int((tmp := msg.payload.decode().split('_'))[0])
         distance = round(float(tmp[1]), 1)
+    except Exception as e:
+        logger.error(f'Error: {str(e)}')
+
+    # post to record
+    try:
         # TODO also need to use device local time, here just ignore that
         res = requests.post(
-            f'http://127.0.0.1/devices/{device_id}/records',
-            data={'distance': distance},
+            f'{BASE_URL}/devices/{device_id}/records',
+            json={'distance': distance},
             headers={"Content-Type": "application/json"})
-
+        data = res.json()
+        logger.info(data['message'])
     except Exception as e:
-        # TODO 
-        print(str(e))
-    
+        logger.error(f'Error: {str(e)}')
+        return
+
     # HERE we compare the threshold and distance
     # TODO
+    try:
+        res1 = requests.get(
+            f'{BASE_URL}/devices/1'
+        )
+        data = res1.json()
+        if data['code'] == 0:
+            threshold = data['data']['threshold']
+        else:
+            raise Exception(data['message'])
+    except Exception as e:
+        # TODO
+        logger.error(f'Error: {str(e)}')
+    
+    if distance >= threshold and not alert_log[1]:
+        # send email
+        alert_log[1] = True
+        sendmail('23870387@student.uwa.edu.au', 'test my email', 'dispenser is running out.')
+    else:
+        # reset flag state
+        alert_log[1] = False
 
 
 # The callback for when the client receives a CONNACK response from the server.
