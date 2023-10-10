@@ -40,5 +40,5 @@ Initiate database
 Also, need to manually create a trigger after initiation.  
 `CREATE TRIGGER AUTOUPDATER AFTER INSERT ON record`  
 `BEGIN`  
-`UPDATE device SET distance = NEW.distance WHERE id=NEW.device_id;`  
+`UPDATE device SET distance = NEW.distance, updated_at = NEW.created_at WHERE id=NEW.device_id;`  
 `END;`

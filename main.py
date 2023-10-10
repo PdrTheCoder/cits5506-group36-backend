@@ -235,7 +235,11 @@ class DeviceRecords(Resource):
             return error_res(f"Invalid input: {str(e)}")
 
         try:
-            db.session.add(record := Record(device_id=device_id, distance=distance))
+            db.session.add(record := Record(
+                device_id=device_id,
+                distance=distance,
+                created_at=datetime.datetime.utcnow()
+            ))
             db.session.commit()
             code, res_data = 0, {"id": record.id}
             msg = f"Record created for device with id {device_id}"
@@ -245,7 +249,6 @@ class DeviceRecords(Resource):
         finally:
             db.session.close()
         return res(msg, code, res_data)
-
 
 
 # adding the defined resources along with their corresponding urls
