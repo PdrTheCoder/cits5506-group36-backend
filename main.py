@@ -2,11 +2,10 @@
 import datetime
 
 from flask import Flask, request
-from flask_restful import Api, Resource
 from flask_cors import CORS
-from pydantic import ValidationError
-
+from flask_restful import Api, Resource
 from model import Device, Record, db
+from pydantic import ValidationError
 from sqlalchemy import desc
 from utils import error_res, ok_res, res
 from validation import DeviceCreate, DeviceUpdate, RecordCreate, RecordUpdate
@@ -31,7 +30,7 @@ class DeviceList(Resource):
 
     def get(self):
         """list all devices"""
-        devices = db.session.query(Device).all()
+        devices = db.session.query(Device).order_by(Device.name).all()
         data = [device.as_dict() for device in devices]
         return ok_res(data=data)
 
@@ -97,7 +96,7 @@ class DeviceItem(Resource):
             db.session.commit()
             res_data = device.as_dict()
             code = 0
-            msg = 'Device updated.'
+            msg = "Device updated."
             return ok_res(msg="Device updated", data=device.as_dict())
         except (KeyError, AttributeError) as e:
             db.session.rollback()
@@ -179,7 +178,7 @@ class RecordItem(Resource):
         record = db.session.get(Record, record_id)
         res_data = None
         code = -1
-        
+
         if record is None:
             return error_res("Error: Record not found")
 
@@ -212,15 +211,13 @@ class DeviceRecords(Resource):
     def get(self, device_id):
         """Get all records for a specific device"""
         """HARD CODE ORDER AND LIMIT - TODO fix it later"""
-        records = db.session.query(
-            Record
-        ).filter(
-            Record.device_id == device_id
-        ).order_by(
-            desc(Record.created_at)
-        ).limit(
-            100
-        ).all()
+        records = (
+            db.session.query(Record)
+            .filter(Record.device_id == device_id)
+            .order_by(desc(Record.created_at))
+            .limit(100)
+            .all()
+        )
         data = [record.as_dict() for record in records]
         return ok_res(data=data)
 
@@ -235,11 +232,13 @@ class DeviceRecords(Resource):
             return error_res(f"Invalid input: {str(e)}")
 
         try:
-            db.session.add(record := Record(
-                device_id=device_id,
-                distance=distance,
-                created_at=datetime.datetime.utcnow()
-            ))
+            db.session.add(
+                record := Record(
+                    device_id=device_id,
+                    distance=distance,
+                    created_at=datetime.datetime.utcnow(),
+                )
+            )
             db.session.commit()
             code, res_data = 0, {"id": record.id}
             msg = f"Record created for device with id {device_id}"
