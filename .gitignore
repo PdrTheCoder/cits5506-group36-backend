@@ -9,3 +9,6 @@ instance/
 # Mac OSX Finder files
 .DS_Store
 
+# We track pub.py.example but can ignore pub.py, in this way, we can make it as our local test .py
+mqtt_client/pub.py
+
