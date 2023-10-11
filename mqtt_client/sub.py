@@ -53,6 +53,7 @@ def callback_data_report(client, userdata, msg):
         data = res1.json()
         if data['code'] == 0:
             threshold = float(data['data']['threshold'])
+            device_name = data['data']['name']
             print(f'threshold - {threshold}')
         else:
             raise Exception(data['message'])
@@ -64,7 +65,10 @@ def callback_data_report(client, userdata, msg):
     if distance >= threshold:
         if not alert_log[device_id]:
             # send email
-            sendmail('23870387@student.uwa.edu.au', 'test my email', f'dispenser - {device_id} is running out.')
+            sendmail(
+                ', '.join(['23870387@student.uwa.edu.au', 'jpatrickbraunagel@gmail.com']),
+                f'Wake up mate, you got to refill the toilet paper - {device_name}',
+                f'Dispenser - {device_id} is running out.')
             # revert the flag
             alert_log[device_id] = True
     else:
