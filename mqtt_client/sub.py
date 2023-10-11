@@ -6,10 +6,16 @@ from send import sendmail
 
 BASE_URL = 'http://127.0.0.1:5009'
 
+# this dict is used for alarm suppression
 alert_log = {
     1: False,
     2: False,
-    3: False
+    3: False,
+    4: False,
+    5: False,
+    6: False,
+    7: False,
+    8: False
 }
 
 logger = logging.getLogger(__name__)
@@ -21,7 +27,7 @@ def callback_data_report(client, userdata, msg):
     try:
         device_id = int((tmp := msg.payload.decode().split('_'))[0])
         distance = round(float(tmp[1]), 1)
-        logger.debug(f'device_id: {device_id}, distance: {distance}.')
+        print(f'device_id: {device_id}, distance: {distance}.')
     except Exception as e:
         logger.error(f'Error: {str(e)}')
 
@@ -33,7 +39,7 @@ def callback_data_report(client, userdata, msg):
             json={'distance': distance},
             headers={"Content-Type": "application/json"})
         data = res.json()
-        logger.debug(data['message'])
+        print(data['message'])
     except Exception as e:
         logger.error(f'Error: {str(e)}')
         return
@@ -47,21 +53,24 @@ def callback_data_report(client, userdata, msg):
         data = res1.json()
         if data['code'] == 0:
             threshold = float(data['data']['threshold'])
-            logger.debug(f'threshold - {threshold}')
+            print(f'threshold - {threshold}')
         else:
             raise Exception(data['message'])
     except Exception as e:
         # TODO
         logger.error(f'Error: {str(e)}')
-    
-    if distance >= threshold and not alert_log[1]:
-        # send email
-        alert_log[1] = True
-        sendmail('23870387@student.uwa.edu.au', 'test my email', 'dispenser - {device_id} is running out.')
+
+    # alert suppression
+    if distance >= threshold:
+        if not alert_log[device_id]:
+            # send email
+            sendmail('23870387@student.uwa.edu.au', 'test my email', f'dispenser - {device_id} is running out.')
+            # revert the flag
+            alert_log[device_id] = True
     else:
         # reset flag state
-        alert_log[1] = False
-    logger.debug('finished.')
+        alert_log[device_id] = False
+    print('finished.')
 
 
 # The callback for when the client receives a CONNACK response from the server.
