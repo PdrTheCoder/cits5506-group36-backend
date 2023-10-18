@@ -215,7 +215,7 @@ class DeviceRecords(Resource):
             db.session.query(Record)
             .filter(Record.device_id == device_id)
             .order_by(desc(Record.created_at))
-            .limit(100)
+            .limit(200)
             .all()
         )
         data = [record.as_dict() for record in records]

@@ -15,7 +15,17 @@ alert_log = {
     5: False,
     6: False,
     7: False,
-    8: False
+    8: False,
+    9: False,
+    10: False,
+    11: False,
+    12: False,
+    13: False,
+    14: False,
+    15: False,
+    16: False,
+    17: False,
+    18: False
 }
 
 logger = logging.getLogger(__name__)
@@ -65,12 +75,15 @@ def callback_data_report(client, userdata, msg):
     if distance >= threshold:
         if not alert_log[device_id]:
             # send email
-            sendmail(
-                ', '.join(['23870387@student.uwa.edu.au', 'jpatrickbraunagel@gmail.com']),
-                f'Wake up mate, you got to refill the toilet paper - {device_name}',
-                f'Dispenser - {device_id} is running out.')
-            # revert the flag
-            alert_log[device_id] = True
+            try:
+                sendmail(
+                    ', '.join(['23870387@student.uwa.edu.au', 'jpatrickbraunagel@gmail.com']),
+                    f'Wake up mate, you got to refill the toilet paper - {device_name}',
+                    f'Dispenser - {device_id} is running out.')
+                # revert the flag
+                alert_log[device_id] = True
+            except Exception as e:
+                print(str(e))
     else:
         # reset flag state
         alert_log[device_id] = False

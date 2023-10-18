@@ -27,7 +27,7 @@ API Backend utilising Flask and Python
 * Flask-RESTful for API generation
 * Flask-Pydantic for data validation
 * Flask-SQLAlchemy for models and database
-* Flask-Cors for core issue
+* Flask-Cors for cors issue
 
 
 ### Database  
